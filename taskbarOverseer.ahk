@@ -13,7 +13,7 @@
   * @param {Boolean} transparent - starts the taskbar overlay in transparent mode
   * @param {String} color - color for when not transparent
   * @param {String} hk - hotkey to use to toggle transparency
-  * @param {String} mode - the method taskbar overseer will use for detecting the taskbar, 1 for Win11, 2 for StartAllBack
+  * @param {Integer} mode - the method taskbar overseer will use for detecting the taskbar, 1 for Win11, 2 for StartAllBack
  */
 class TaskbarOverseer
 {
