@@ -24,6 +24,7 @@ class TaskbarOverseer
 
   MODE_WIN_11 := 1
   MODE_STARTALLBACK := 2
+  WM_LBUTTONDOWN := 0x0201
 
   canDestroy := 1
   color := ""
@@ -64,7 +65,7 @@ class TaskbarOverseer
     )
 
     guiClickedCallback := this.destroyGui.Bind(this)
-    this.gui.OnMessage(WM_LBUTTONDOWN, guiClickedCallback)
+    this.gui.OnMessage(this.WM_LBUTTONDOWN, guiClickedCallback)
 
     SetGuiTransparency()
     {
