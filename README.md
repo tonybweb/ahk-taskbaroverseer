@@ -29,12 +29,12 @@ TaskbarOverseer(0)
 TaskbarOverseer(0,"FF0000")
 ```
 ### Togglable Color Mode
-Toggle between transparent and red color mode with Ctrl + T
+Toggle between transparent and red color mode with Ctrl + t
 ```
-TaskbarOverseer(1, "FF0000", "^T")
+TaskbarOverseer(1, "FF0000", "^t")
 ```
 ### StartAllBack Mode
-Uses an alternate taskbar detection method
+Uses the alternate taskbar detection method
 ```
 TaskbarOverseer(, , , 2)
 ```
@@ -42,7 +42,7 @@ TaskbarOverseer(, , , 2)
 These values are configurable at the top of the class
 ```
   HOVER_DELAY := 500 ;the amount of time in milliseconds before the taskbar will unhide
-  HEIGHT := 7 ;the height of the taskbar overlay, valid values: 1-40
+  HEIGHT := 7 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
   MOUSE_INTERVAL := 100 ;the interval in milliseconds where we capture current mouse position, you can probably leave this alone
   RECREATE_DELAY := 750 ;the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
 ```
