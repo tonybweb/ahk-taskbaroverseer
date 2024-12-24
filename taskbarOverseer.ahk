@@ -18,7 +18,7 @@
 class TaskbarOverseer
 {
   HOVER_DELAY := 500 ;the amount of time in milliseconds before the taskbar will unhide
-  HEIGHT := 7 ;the height of the taskbar overlay, valid values: 1-40
+  HEIGHT := 7 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
   MOUSE_INTERVAL := 100 ;the interval in milliseconds where we capture current mouse position, you can probably leave this alone
   RECREATE_DELAY := 750 ;the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
 
