@@ -18,9 +18,9 @@
 class TaskbarOverseer
 {
   HOVER_DELAY := 500 ;the amount of time in milliseconds before the taskbar will unhide
-  HEIGHT := 7 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
+  HEIGHT := 5 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
   MOUSE_INTERVAL := 100 ;the interval in milliseconds where we capture current mouse position, you can probably leave this alone
-  RECREATE_DELAY := 750 ;the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
+  RECREATE_DELAY := 500 ;default 500; the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
 
   MODE_WIN_11 := 1
   MODE_STARTALLBACK := 2
@@ -134,7 +134,7 @@ class TaskbarOverseer
       mouseOverAppHwnd := ""
     }
 
-    if (this.canDestroy && mouseOverAppHwnd == this.gui?.Hwnd? ?? "") {
+    if (this.canDestroy && mouseOverAppHwnd == (this.gui?.Hwnd? ?? "")) {
       this.canDestroy := 0
       guiHoveredCallback := this.destroyGui.Bind(this)
       SetTimer(guiHoveredCallback, -this.HOVER_DELAY)
