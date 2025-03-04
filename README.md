@@ -15,7 +15,7 @@ I have an OLED monitor and I run with an auto hidden taskbar to help prevent scr
 ### Default Mode
 Transparent only
 ```
-#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2
 #Include <ahk-taskbaroverseer\taskbarOverseer>
 
 TaskbarOverseer()

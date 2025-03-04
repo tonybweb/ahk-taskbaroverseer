@@ -17,10 +17,10 @@
  */
 class TaskbarOverseer
 {
-  HOVER_DELAY := 500 ;the amount of time in milliseconds before the taskbar will unhide
+  HOVER_DELAY := 400 ;the amount of time in milliseconds before the taskbar will unhide
   HEIGHT := 5 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
   MOUSE_INTERVAL := 100 ;the interval in milliseconds where we capture current mouse position, you can probably leave this alone
-  RECREATE_DELAY := 500 ;default 500; the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
+  RECREATE_DELAY := 100 ;default 100; the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
 
   MODE_WIN_11 := 1
   MODE_STARTALLBACK := 2
@@ -69,7 +69,7 @@ class TaskbarOverseer
 
     SetGuiTransparency()
     {
-      DllCall("SetLayeredWindowAttributes","Uptr",this.gui.hwnd,"Uint",0,"char",this.transparent ? 1 : 255,"uint",2)
+      DllCall("SetLayeredWindowAttributes","Uptr",this.gui.hwnd,"Uint",0,"char", this.transparent ? 1 : 255,"uint",2)
     }
   }
 
