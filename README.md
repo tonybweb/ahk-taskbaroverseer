@@ -7,42 +7,79 @@ I have an OLED monitor and I run with an auto hidden taskbar to help prevent scr
 ## Features
 - Supports Windows 11 (possibly others, haven't tested)
 - Supports StartAllBack [[link](https://www.startallback.com/)]
-- Configurable height, minimum 1 pixel for hover detection
 - Transparent only mode
 - Toggle between transparent mode and any color overlay you want with a configurable hotkey
+- Callback support for temporarily disabling the overlay under almost any circumstance
+
+Note: Requires AutoHotkey v2.1 alpha. It's probably not difficult to make it work with standard v2 but ¯\\\_(ツ)_/¯
 
 ## Examples
 ### Default Mode
-Transparent only
+Green Overlay
 ```
-#Requires AutoHotkey v2
-#Include <ahk-taskbaroverseer\taskbarOverseer>
+#Include <ahk-taskbaroverseer\TaskbarOverseer>
 
-TaskbarOverseer()
+TaskbarOverseer.run()
 ```
-### Green Overlay
+### Transparent Mode
 ```
-TaskbarOverseer(0)
+TaskbarOverseer.transparent().run()
 ```
 ### Red Overlay
 ```
-TaskbarOverseer(0,"FF0000")
+TaskbarOverseer.color("FF0000").run()
 ```
 ### Togglable Color Mode
 Toggle between transparent and red color mode with Ctrl + t
 ```
-TaskbarOverseer(1, "FF0000", "^t")
+TaskbarOverseer
+  .transparent()
+  .color("FF0000")
+  .hotkey("^t")
+  .run()
 ```
 ### StartAllBack Mode
 Uses the alternate taskbar detection method
 ```
-TaskbarOverseer(, , , 2)
+TaskbarOverseer.startAllBack().run()
 ```
-## More Options
-These values are configurable at the top of the class
+### Callback Example
+Taskbar Overseer overlays basically every app and sometimes this can be undesireable (video players, games, etc.). You can use the callback functionality to disable the overlay where appropiate.
+
+In the below example every 2 seconds we check if the active app is`YourGame.exe` if so we return false which disables Taskbar Overseer. It'll automatically renable itself again when the callback function returns true again.
 ```
-  HOVER_DELAY := 500 ;the amount of time in milliseconds before the taskbar will unhide
-  HEIGHT := 7 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
-  MOUSE_INTERVAL := 100 ;the interval in milliseconds where we capture current mouse position, you can probably leave this alone
-  RECREATE_DELAY := 750 ;the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
+lookForGameEveryInterval(*) {
+  static  canOverseer := true,
+          interval := 2000,
+          lastTick := 0
+
+  if (A_TickCount - lastTick > interval) {
+    lastTick := A_TickCount
+
+    canOverseer := true
+    if (WinActive("ahk_exe YourGame.exe")) {
+      canOverseer := false
+    }
+  }
+
+  return canOverseer
+}
+
+TaskbarOverseer
+  .transparent()
+  .canOverseeCallback(lookForGameEveryInterval)
+  .run()
+```
+## Available Options
+Available fluent options (see subclasses\Builder.ahk)
+```
+  .canOverseeCallback(callback)
+  .color(value)
+  .height(value)
+  .hotkey(value)
+  .hoverDelay(value)
+  .mouseInterval(value)
+  .transparent()
+  .recreateDelay(value)
+  .startAllBack()
 ```

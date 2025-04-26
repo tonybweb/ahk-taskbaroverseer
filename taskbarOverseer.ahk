@@ -1,67 +1,65 @@
+#Requires AutoHotkey v2.1-a
+
 /************************************************************************
  * @description TaskbarOverseer, adds a configurable delay before showing
  * your auto hidden taskbar
  *
  * @author tonybweb
- * @date 2024/12/23
- * @version 1.0.0
+ * @date 2025/04/25
+ * @version 1.1.0
  ***********************************************************************/
 
-/**
- * TaskbarOverseer, adds a configurable delay before showing your auto hidden taskbar
- *
-  * @param {Boolean} transparent - starts the taskbar overlay in transparent mode
-  * @param {String} color - color for when not transparent
-  * @param {String} hk - hotkey to use to toggle transparency
-  * @param {Integer} mode - the method taskbar overseer will use for detecting the taskbar, 1 for Win11, 2 for StartAllBack
- */
 class TaskbarOverseer
 {
-  HOVER_DELAY := 400 ;the amount of time in milliseconds before the taskbar will unhide
-  HEIGHT := 5 ;the height of the taskbar overlay, recommended values: 1-10ish, personal preference / resolution dependant
-  MOUSE_INTERVAL := 100 ;the interval in milliseconds where we capture current mouse position, you can probably leave this alone
-  RECREATE_DELAY := 100 ;default 100; the amount of time in milliseconds after the taskbar autohides before we recreate the taskbar overseer
+  #Include "subclasses\Builder.ahk"
+  static canOverseeCallback(callback) => TaskbarOverseer.Builder().canOverseeCallback(callback)
+  static color(value) => TaskbarOverseer.Builder().color(value)
+  static height(value) => TaskbarOverseer.Builder().height(value)
+  static hotkey(value) => TaskbarOverseer.Builder().hotkey(value)
+  static hoverDelay(value) => TaskbarOverseer.Builder().hoverDelay(value)
+  static mouseInterval(value) => TaskbarOverseer.Builder().mouseInterval(value)
+  static transparent() => TaskbarOverseer.Builder().transparent()
+  static recreateDelay(value) => TaskbarOverseer.Builder().recreateDelay(value)
+  static startAllBack() => TaskbarOverseer.Builder().startAllBack()
+  static run() => TaskbarOverseer.Builder().run()
 
-  MODE_WIN_11 := 1
-  MODE_STARTALLBACK := 2
+  static MODE_WIN_11 := 1
+  static MODE_STARTALLBACK := 2
+
+  WS_DISABLED := 0x08000000
+  WS_EX_LAYERED := 0x00080000
   WM_LBUTTONDOWN := 0x0201
 
   canDestroy := 1
-  color := ""
-  mode := this.MODE_WIN_11
-  transparent := 0
+  gui := ""
+  options := {}
 
-  __New(transparent := 1, color := "00FF00", hk := "", mode := this.MODE_WIN_11)
+  __New(options)
   {
-    this.color := color
-    this.transparent := transparent
-    this.mode := mode
-
     CoordMode("Mouse", "Screen")
+    this.options := options
 
     this.createGui()
-    SetTimer(() => this.watchMouse(), this.MOUSE_INTERVAL)
+    SetTimer(() => this.watcher(), this.options.mouseInterval)
 
-    if (hk) {
-      this.hotkeys(hk)
-    }
+    this.hotkeys()
   }
 
   createGui()
   {
     this.canDestroy := 1
-		this.gui := Gui("-DPIScale -Caption +E0x80000 +AlwaysOnTop +ToolWindow") ;E0x80000 layered window
+		this.gui := Gui("-DPIScale -Caption +AlwaysOnTop +ToolWindow +E" this.WS_EX_LAYERED " +E" this.WS_DISABLED)
     SetGuiTransparency()
-    this.gui.BackColor := this.color
+    this.gui.BackColor := this.options.color
     this.gui.MarginX := 0
     this.gui.MarginY := 0
 
     this.gui.Show(
       "NoActivate"
       " x" 0
-      " y" A_ScreenHeight - this.HEIGHT
+      " y" A_ScreenHeight - this.options.height
       " w" A_ScreenWidth
-      " h" this.HEIGHT
+      " h" this.options.height
     )
 
     guiClickedCallback := this.destroyGui.Bind(this)
@@ -69,44 +67,43 @@ class TaskbarOverseer
 
     SetGuiTransparency()
     {
-      DllCall("SetLayeredWindowAttributes","Uptr",this.gui.hwnd,"Uint",0,"char", this.transparent ? 1 : 255,"uint",2)
+      DllCall("SetLayeredWindowAttributes","Uptr",this.gui.hwnd,"Uint",0,"char", this.options.transparent ? 1 : 255,"uint",2)
     }
   }
 
   destroyGui(GuiCtrlObj := {}, wParam := "", lParam := "", msg := "") {
+    static callback := this.recreateWhenTaskbarHides.Bind(this)
+
     if (this.gui) {
       this.gui.Destroy()
       this.gui := ""
 
-      SetTimer(() => this.recreateWhenTaskbarHides(), this.RECREATE_DELAY)
+      SetTimer(callback, this.options.recreateDelay)
     }
     return 0
   }
 
-  hotkeys(hk)
+  hotkeys()
   {
-    Hotkey(hk, ToggleTransparency)
-
-    ToggleTransparency(hk)
-    {
-      this.transparent := ! this.transparent
-      this.canDestroy := 0
-      this.destroyGui()
+    if (this.options.hotkey) {
+      Hotkey(this.options.hotkey, (*) => this.toggleTransparency())
     }
   }
 
   recreateWhenTaskbarHides()
   {
-    Switch(this.mode) {
-      case this.MODE_WIN_11:
-        taskbarHidden := DetectWin11Taskbar()
-      case this.MODE_STARTALLBACK:
-        taskbarHidden := DetectStartAllBackTaskbar()
-    }
+    if (this.options.canOversee()) {
+      switch(this.options.mode) {
+        case TaskbarOverseer.MODE_WIN_11:
+          taskbarHidden := DetectWin11Taskbar()
+        case TaskbarOverseer.MODE_STARTALLBACK:
+          taskbarHidden := DetectStartAllBackTaskbar()
+      }
 
-    if (taskbarHidden) {
-      SetTimer(, 0)
-      SetTimer(() => this.createGui(), -this.RECREATE_DELAY)
+      if (taskbarHidden) {
+        SetTimer(, 0)
+        SetTimer(() => this.createGui(), -this.options.recreateDelay)
+      }
     }
 
     DetectWin11Taskbar()
@@ -114,7 +111,7 @@ class TaskbarOverseer
       taskbarHidden := 0
       if (WinExist("ahk_class Shell_TrayWnd")) {
         WinGetPos(, &taskbarY, , , "ahk_class Shell_TrayWnd")
-        taskbarHidden := A_ScreenHeight - taskbarY <= this.HEIGHT
+        taskbarHidden := A_ScreenHeight - taskbarY <= this.options.height
       }
 
       return taskbarHidden
@@ -126,18 +123,29 @@ class TaskbarOverseer
     }
   }
 
-  watchMouse()
+  toggleTransparency()
   {
-    Try {
-      MouseGetPos(, , &mouseOverAppHwnd)
-    } catch as e {
-      mouseOverAppHwnd := ""
-    }
+    this.options.transparent := ! this.options.transparent
+    this.canDestroy := 0
+    this.destroyGui()
+  }
 
-    if (this.canDestroy && mouseOverAppHwnd == (this.gui?.Hwnd? ?? "")) {
-      this.canDestroy := 0
-      guiHoveredCallback := this.destroyGui.Bind(this)
-      SetTimer(guiHoveredCallback, -this.HOVER_DELAY)
+  watcher()
+  {
+    if (this.options.canOversee()) {
+      try {
+        MouseGetPos(, , &mouseOverAppHwnd)
+      } catch as e {
+        mouseOverAppHwnd := ""
+      }
+
+      if (this.canDestroy && mouseOverAppHwnd == (this.gui?.Hwnd? ?? "")) {
+        this.canDestroy := 0
+        guiHoveredCallback := this.destroyGui.Bind(this)
+        SetTimer(guiHoveredCallback, -this.options.hoverDelay)
+      }
+    } else {
+      this.destroyGui()
     }
   }
 }
