@@ -26,16 +26,13 @@ class TaskbarOverseer
   static MODE_WIN_11 := 1
   static MODE_STARTALLBACK := 2
 
-  WS_DISABLED := 0x08000000
-  WS_EX_LAYERED := 0x00080000
-  WM_LBUTTONDOWN := 0x0201
+  WS_DISABLED := 0x08000000, WS_EX_LAYERED := 0x00080000, WM_LBUTTONDOWN := 0x0201
 
   canDestroy := 1
   gui := ""
   options := {}
 
-  __New(options)
-  {
+  __New(options) {
     CoordMode("Mouse", "Screen")
     this.options := options
 
@@ -45,10 +42,9 @@ class TaskbarOverseer
     this.hotkeys()
   }
 
-  createGui()
-  {
+  createGui() {
     this.canDestroy := 1
-		this.gui := Gui("-DPIScale -Caption +AlwaysOnTop +ToolWindow +E" this.WS_EX_LAYERED " +E" this.WS_DISABLED)
+		this.gui := Gui("-DPIScale -Caption +AlwaysOnTop +ToolWindow +E" (this.WS_EX_LAYERED | this.WS_DISABLED))
     SetGuiTransparency()
     this.gui.BackColor := this.options.color
     this.gui.MarginX := 0
@@ -65,8 +61,7 @@ class TaskbarOverseer
     guiClickedCallback := this.destroyGui.Bind(this)
     this.gui.OnMessage(this.WM_LBUTTONDOWN, guiClickedCallback)
 
-    SetGuiTransparency()
-    {
+    SetGuiTransparency() {
       DllCall("SetLayeredWindowAttributes","Uptr",this.gui.hwnd,"Uint",0,"char", this.options.transparent ? 1 : 255,"uint",2)
     }
   }
@@ -83,15 +78,13 @@ class TaskbarOverseer
     return 0
   }
 
-  hotkeys()
-  {
+  hotkeys() {
     if (this.options.hotkey) {
       Hotkey(this.options.hotkey, (*) => this.toggleTransparency())
     }
   }
 
-  recreateWhenTaskbarHides()
-  {
+  recreateWhenTaskbarHides() {
     if (this.options.canOversee()) {
       switch(this.options.mode) {
         case TaskbarOverseer.MODE_WIN_11:
@@ -106,8 +99,7 @@ class TaskbarOverseer
       }
     }
 
-    DetectWin11Taskbar()
-    {
+    DetectWin11Taskbar() {
       taskbarHidden := 0
       if (WinExist("ahk_class Shell_TrayWnd")) {
         WinGetPos(, &taskbarY, , , "ahk_class Shell_TrayWnd")
@@ -116,22 +108,18 @@ class TaskbarOverseer
 
       return taskbarHidden
     }
-
-    DetectStartAllBackTaskbar()
-    {
+    DetectStartAllBackTaskbar() {
       return ! WinExist("ahk_class Shell_TrayWnd")
     }
   }
 
-  toggleTransparency()
-  {
+  toggleTransparency() {
     this.options.transparent := ! this.options.transparent
     this.canDestroy := 0
     this.destroyGui()
   }
 
-  watcher()
-  {
+  watcher() {
     if (this.options.canOversee()) {
       try {
         MouseGetPos(, , &mouseOverAppHwnd)
@@ -139,7 +127,7 @@ class TaskbarOverseer
         mouseOverAppHwnd := ""
       }
 
-      if (this.canDestroy && mouseOverAppHwnd == (this.gui?.Hwnd? ?? "")) {
+      if (this.canDestroy && this.gui != "" && mouseOverAppHwnd == (this.gui?.Hwnd? ?? "")) {
         this.canDestroy := 0
         guiHoveredCallback := this.destroyGui.Bind(this)
         SetTimer(guiHoveredCallback, -this.options.hoverDelay)

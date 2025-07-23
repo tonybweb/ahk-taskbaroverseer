@@ -1,5 +1,4 @@
-class Builder
-{
+class Builder {
   options := {
     canOversee:         (*) => true,
     color:              "00FF00",
@@ -17,8 +16,7 @@ class Builder
     return this
   }
 
-  color(value)
-  {
+  color(value) {
     this.options.color := value
     return this
   }
@@ -28,14 +26,12 @@ class Builder
    * @param {Integer} value - the height of the taskbar overlay
    * @returns {Builder}
    */
-  height(value)
-  {
+  height(value) {
     this.options.height := value
     return this
   }
 
-  hotkey(value)
-  {
+  hotkey(value) {
     this.options.hotkey := value
     return this
   }
@@ -44,8 +40,7 @@ class Builder
    * @param {Integer} value - the amount of time in milliseconds before the taskbar will unhide
    * @returns {Builder}
    */
-  hoverDelay(value)
-  {
+  hoverDelay(value) {
     this.options.hoverDelay := value
     return this
   }
@@ -56,14 +51,12 @@ class Builder
    * @param {Integer} value - default 100, lower values = slighty more responsive at the cost of more processing
    * @returns {Builder}
    */
-  mouseInterval(value)
-  {
+  mouseInterval(value) {
     this.options.mouseInterval := value
     return this
   }
 
-  transparent()
-  {
+  transparent() {
     this.options.transparent := 1
     return this
   }
@@ -74,20 +67,17 @@ class Builder
    * @param {Integer} value - default 100
    * @returns {Builder}
    */
-  recreateDelay(value)
-  {
+  recreateDelay(value) {
     this.options.recreateDelay := value
     return this
   }
 
-  startAllBack()
-  {
+  startAllBack() {
     this.options.mode := TaskbarOverseer.MODE_STARTALLBACK
     return this
   }
 
-  run()
-  {
+  run() {
     return TaskbarOverseer(this.options)
   }
 }
